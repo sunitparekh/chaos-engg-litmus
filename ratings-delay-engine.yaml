@@ -1,0 +1,45 @@
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: bookinfo-ratings-network-delay
+  namespace: default
+spec: 
+  # It can be active/stop
+  engineState: 'active'
+  appinfo: 
+    appns: 'default'
+    # FYI, To see app label, apply kubectl get pods --show-labels
+    applabel: 'app=ratings'
+    appkind: 'deployment'
+  chaosServiceAccount: pod-network-latency-sa
+  experiments:
+    - name: pod-network-latency
+      spec:
+        components:
+          env:
+            - name: TOTAL_CHAOS_DURATION
+              value: '120' # in seconds
+
+            #Network interface inside target container
+            - name: NETWORK_INTERFACE
+              value: 'eth0'     
+
+            - name: NETWORK_LATENCY
+              value: '5000'
+
+            - name: JITTER
+              value: '200'            
+
+
+            # provide the name of container runtime
+            # for litmus LIB, it supports docker, containerd, crio
+            # for pumba LIB, it supports docker only
+            - name: CONTAINER_RUNTIME
+              value: 'containerd'
+
+            # provide the socket file path
+            - name: SOCKET_PATH
+              value: '/run/k3s/containerd/containerd.sock'
+             ## percentage of total pods to target
+            - name: PODS_AFFECTED_PERC
+              value: '100'  
